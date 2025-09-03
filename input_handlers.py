@@ -21,6 +21,8 @@ class EventHandler(tcod.event.EventDispatch[Action]):
             action = MovementAction(dx=-1, dy=0)
         elif key == tcod.event.KeySym.RIGHT:
             action = MovementAction(dx=1, dy=0)
+        elif key == tcod.event.KeySym.SPACE:
+            action = MovementAction(dx=2, dy=0)
 
         elif key == tcod.event.KeySym.ESCAPE:
             action = EscapeAction()
