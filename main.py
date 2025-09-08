@@ -1,19 +1,33 @@
 #!/usr/bin/env python3
 import tcod
 
-from actions import EscapeAction, MovementAction
+import dungen
+from engine import Engine
+from entity import Entity
 from input_handlers import EventHandler
 
 def main() -> None:
     screen_width = 80
     screen_height = 50
 
-    player_x = int(screen_width/2)
-    player_y = int(screen_height/2)
+    map_width = 80
+    map_height = 45
+
+    rooms_max_size = 16
+    rooms_min_size = 9
+    max_rooms = 50
 
     tileset = tcod.tileset.load_tilesheet("dejavu10x10_gs_tc.png", 32,8, tcod.tileset.CHARMAP_TCOD)
 
     event_handler = EventHandler()
+
+    player = Entity(int(screen_width / 2), int(screen_height / 2), "@", (237,211,92) )
+    npc = Entity(int(screen_width / 2 - 5), int(screen_height / 2), "@", (63,252,202) )
+    entities = {npc, player}
+
+    game_map = dungen.generate_dungeon(max_rooms,rooms_min_size, rooms_max_size, map_width, map_height, player)
+
+    engine = Engine(entities=entities, event_handler=event_handler, game_map=game_map, player=player)
 
     with tcod.context.new(
         columns=screen_width,
@@ -24,26 +38,11 @@ def main() -> None:
     ) as context:
         root_console = tcod.console.Console(screen_width, screen_height, order="F")
         while True:
-            root_console.print(x=player_x, y=player_y, string = "@")
+            engine.render(root_console, context)
 
-            context.present(root_console)
+            events = tcod.event.wait()
 
-            root_console.clear()
-
-            for event in tcod.event.wait():
-
-                action = event_handler.dispatch(event)
-
-                if action is None:
-                    continue
-
-                if isinstance(action, MovementAction):
-                    player_x += action.dx
-                    player_y += action.dy
-
-                if isinstance(action, EscapeAction):
-                    raise SystemExit()
-
+            engine.handle_events(events)
 
 if __name__ == "__main__":
     main()
